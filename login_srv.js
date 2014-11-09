@@ -37,11 +37,16 @@ function onconnect(socket) { //Что делать при коннекте кл�
 
 //Обработчик запроса занятости имени юзера
     socket.on('checkLoginName', function (data) {
-        login = JSON.parse(data);
-        console.log('Шифрованная строка = '+ login.login);
-
-        checkName(keyServer.decrypt(login.login));
+//        login = JSON.parse(data);
+//        console.log('Шифрованная строка = '+ login.login);
+        checkName(keyServer.decrypt(JSON.parse(data)));
     });
+
+//Обработчик запроса логина
+    socket.on('login', function (data) {
+        checkLogin(keyServer.decrypt(JSON.parse(data)));
+    });
+
 //Обработчик запроса добавления юзера
     socket.on('regUser', function (data) {
         console.log(data);
