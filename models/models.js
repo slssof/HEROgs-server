@@ -26,3 +26,18 @@ module.exports = function (db, cb) {
 
     return cb();
 };
+
+module.exports = function (db, cb) {
+    db.define("sessions", {
+        id            : { type: "serial", key: true },
+        name          : { type: "integer", size: 11},
+        ip            : { type: "text", size: 39 },
+        key           : { type: "text", size: 32},
+        privKeyServ   : { type: "text", size: 300 },
+        pubKeyServ    : { type: "text", size: 140 },
+        privKeyClient : { type: "text", size: 300 },
+        pubKeyClient  : { type: "text", size: 140 }
+    });
+
+    return cb();
+};
