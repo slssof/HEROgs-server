@@ -1,6 +1,7 @@
 /**
  * Created by slshome on 31.07.14.
  */
+        
 var NodeRSA = require('node-rsa'); //Подключили библиотеку RSA
 var rand = require('RNG'); //Мой ГПСЧ
 var Hashes = require('jshashes'); // Генератор хэшей
@@ -44,7 +45,7 @@ function onconnect(socket) { //Что делать при коннекте кл�
 
 //Обработчик запроса логина
     socket.on('login', function (data) {
-        checkLogin(keyServer.decrypt(JSON.parse(data)));
+        checkLogin(JSON.parse(keyServer.decrypt(JSON.parse(data))));
     });
 
 //Обработчик запроса добавления юзера
@@ -114,7 +115,40 @@ function onconnect(socket) { //Что делать при коннекте кл�
         }
     }
 
-}
+// Проверка логина
+    function checkLogin(regData) {
+        var userId;
+        var userPassword;
+        var rez;
+        var validate = validator.matches(regData.login, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=]+$/) *
+            validator.matches(regData.password, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=_]+$/);
+        if(validate) {
+            console.log('validete = ' + validate);
+//Находим юзера
+            User.find({login: regData.login}, function (err, user) {
+                console.log("user= " + user);
+                if(user.length > 0) {
+                    console.log("user[0].id= " + user[0].id);
+                    userId = user[0].id;
+                    userPassword = user[0].password;
+                } else {
+                    console.log("User not found");
+                }
+                var password = SHA256.hex(regData.password + SHA256.hex(userId));
+                console.log("password = " + password);
+                if (password === userPassword) {
+                    createSession(regData);
+                }
+
+            });
+        }
+    };
+
+    function createSession(Data) {
+
+    };
+
+};
 
 var orm = require("orm"); //Подключили библиотеку БД
 var transaction = require("orm-transaction"); // Подключили к ней транзакции
