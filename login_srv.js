@@ -22,14 +22,14 @@ function onconnect(socket) { //Что делать при коннекте кл�
     pubKeyServ = keyServer.getPublicPEM();
     privKeyClient = keyClient.getPrivatePEM();
     pubKeyClient = keyClient.getPublicPEM();
-    /*console.log(privKeyServ);
-    console.log(pubKeyServ);
-    console.log(privKeyClient);
-    console.log(pubKeyClient);*/
+//    console.log(privKeyServ);
+//    console.log(pubKeyServ);
+//    console.log(privKeyClient);
+//    console.log(pubKeyClient);
 //    console.log(socket.id);
 //    console.log(pubKeyServ);
-    console.log('Encypr = ' + keyServer.encrypt("s"));
-    console.log('Decrypt = ' + keyServer.decrypt(keyServer.encrypt("s")));
+//    console.log('Encypr = ' + keyServer.encrypt("s"));
+//    console.log('Decrypt = ' + keyServer.decrypt(keyServer.encrypt("s")));
     var key = {};
     key.pub = pubKeyServ;
     key.priv = privKeyClient;
@@ -45,7 +45,10 @@ function onconnect(socket) { //Что делать при коннекте кл�
 
 //Обработчик запроса логина
     socket.on('login', function (data) {
-        checkLogin(JSON.parse(keyServer.decrypt(JSON.parse(data))));
+        var oLogin = {};
+        oLogin.login = keyServer.decrypt(data.login);
+        oLogin.password = keyServer.decrypt(data.password);
+        checkLogin(oLogin);
     });
 
 //Обработчик запроса добавления юзера
@@ -123,7 +126,6 @@ function onconnect(socket) { //Что делать при коннекте кл�
         var validate = validator.matches(regData.login, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=]+$/) *
             validator.matches(regData.password, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=_]+$/);
         if(validate) {
-            console.log('validete = ' + validate);
 //Находим юзера
             User.find({login: regData.login}, function (err, user) {
                 console.log("user= " + user);
@@ -131,15 +133,16 @@ function onconnect(socket) { //Что делать при коннекте кл�
                     console.log("user[0].id= " + user[0].id);
                     userId = user[0].id;
                     userPassword = user[0].password;
+                    var password = SHA256.hex(regData.password + SHA256.hex(userId));
+                    if (password === userPassword) {
+                        console.log("create session");
+                        createSession(regData);
+                    } else {
+                        console.log("password error");
+                    }
                 } else {
                     console.log("User not found");
                 }
-                var password = SHA256.hex(regData.password + SHA256.hex(userId));
-                console.log("password = " + password);
-                if (password === userPassword) {
-                    createSession(regData);
-                }
-
             });
         }
     };
