@@ -61,45 +61,43 @@ function onconnect(socket) { //Что делать при коннекте кл�
     function addUser(regData) {
         var validate = validator.matches(regData.login, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=]+$/) *
             validator.matches(regData.password, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=_]+$/) *
-            validator.isEmail(regData.email) *
-            validator.matches(regData.realName, /^[0-9A-Za-zА-Яа-яЁё\s]+$/) *
-            validator.isDate(regData.birthDay);
-        if ((regData.sex == 0)|| (regData.sex == 1)) validate = validate * 1; else validate = validate * 0;
-        if ((regData.lang == 0)||(regData.lang == 1)) validate = validate * 1; else validate = validate * 0;
+            validator.isEmail(regData.email);
         if(validate) {
             console.log('validete = ' + validate);
             var dateReg = new Date();
 //Добавляем юзера, сперва создаем юзера, потом берем его id делаем из него соль и с этой солью генерим пароль, записываем
-            User.create([
-                {
-                    name      : regData.realName,
-                    birthday  : regData.birthDay,
-                    sex       : regData.sex,
-                    login     : regData.login,
-                    email     : regData.email,
-                    workLevel : 0,
-                    join      : dateReg,
-                    lang      : regData.lang,
-                    rank      : 0
-                }
-            ], function (err, items) {
-                console.log(err);
-                var userId;
-                User.find({login: regData.login}, function (err, user) {
-                    if(user.length > 0) {
-                        userId = user[0].id;
-                    } else {
-                        console.log("User not created");
+            if (User) {
+                User.create([
+                    {
+                        name: " ",
+                        birthday: dateReg,
+                        sex: 1,
+                        login: regData.login,
+                        email: regData.email,
+                        workLevel: 0,
+                        join: dateReg,
+                        lang: 0,
+                        rank: 0
                     }
-                    var password = SHA256.hex(regData.password + SHA256.hex(userId));
-                    console.log("password = " + password);
-                    user[0].save(function (err) {
-                        if(!err) socket.emit('userAdded',{rez: 0}); else console.log("Password not added");
+                ], function (err, items) {
+                    console.log(err);
+                    var userId;
+                    User.find({login: regData.login}, function (err, user) {
+                        if (user.length > 0) {
+                            userId = user[0].id;
+                        } else {
+                            console.log("User not created");
+                        }
+                        var password = SHA256.hex(regData.password + SHA256.hex(userId));
+                        console.log("password = " + password);
+                        user[0].save(function (err) {
+                            if (!err) socket.emit('userAdded', {rez: 0}); else console.log("Password not added");
+                        });
                     });
                 });
-            });
-        };
-    };
+            }
+        }
+    }
 
 // Проверка логина
     function checkLogin(regData) {
@@ -109,55 +107,59 @@ function onconnect(socket) { //Что делать при коннекте кл�
             validator.matches(regData.password, /^[0-9A-Za-zА-Яа-яЁё\s!@#$()+.=_]+$/);
         if(validate) {
 //Находим юзера
-            User.find({login: regData.login}, function (err, user) {
-                if(user.length > 0) {
-                    userId = user[0].id;
-                    userPassword = user[0].password;
-                    var password = SHA256.hex(regData.password + SHA256.hex(userId));
-                    if (password === userPassword) {
-                        console.log("create session");
-                        createSession(userId);
+            if (User) {
+                User.find({login: regData.login}, function (err, user) {
+                    if (user.length > 0) {
+                        userId = user[0].id;
+                        userPassword = user[0].password;
+                        var password = SHA256.hex(regData.password + SHA256.hex(userId));
+                        if (password === userPassword) {
+                            console.log("create session");
+                            createSession(userId);
+                        } else {
+                            socket.emit('loginError');
+                        }
                     } else {
                         socket.emit('loginError');
                     }
-                } else {
-                    socket.emit('loginError');
-                }
-            });
+                });
+            }
         }
-    };
+    }
 
     function createSession(data) {
         console.log("socket.handshake.address = " + socket.handshake.address.address);
         var datetime = new Date();
-        Session.create([
-            {
-                user          : data,
-                ip            : socket.handshake.address.address,
-                key           : socket.id,
-                privKeyServ   : keyServer.getPrivatePEM(),
-                pubKeyServ    : keyServer.getPublicPEM(),
-                privKeyClient : keyClient.getPrivatePEM(),
-                pubKeyClient  : keyClient.getPublicPEM(),
-                timeOpen      : datetime
-            }
-        ], function (err, items) {
-            console.log("CreateSession error = " + err);
-            var oSess = {};
-
-            Session.find({user: data}).order('-id').one(function (err, user) {
-                if(user.id > 0) {
-                    socket.emit('createSession', user);
-                    console.log("Session sended to Client");
-                } else {
-                    console.log("Session not created");
+        if (Session) {
+            Session.create([
+                {
+                    user: data,
+                    ip: socket.handshake.address.address,
+                    key: socket.id,
+                    privKeyServ: keyServer.getPrivatePEM(),
+                    pubKeyServ: keyServer.getPublicPEM(),
+                    privKeyClient: keyClient.getPrivatePEM(),
+                    pubKeyClient: keyClient.getPublicPEM(),
+                    timeOpen: datetime
                 }
+            ], function (err, items) {
+                console.log("CreateSession error = " + err);
+                var oSess = {};
+
+                Session.find({user: data}).order('-id').one(function (err, user) {
+                    if (user.id > 0) {
+                        socket.emit('createSession', user);
+                        console.log("Session sended to Client");
+                    } else {
+                        console.log("Session not created");
+                    }
+                });
+
             });
+        }
+    }
 
-        });
-    };
-
-};
+}
 
 var orm = require("orm"); //Подключили библиотеку БД
 
