@@ -90,6 +90,7 @@ function onconnect(socket) { //Что делать при коннекте кл�
                         }
                         var password = SHA256.hex(regData.password + SHA256.hex(userId));
                         console.log("password = " + password);
+                        user[0].password = password;
                         user[0].save(function (err) {
                             if (!err) socket.emit('userAdded', {rez: 0}); else console.log("Password not added");
                         });
