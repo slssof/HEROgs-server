@@ -85,15 +85,17 @@ function onconnect(socket) { //Что делать при коннекте кл�
                     User.find({login: regData.login}, function (err, user) {
                         if (user.length > 0) {
                             userId = user[0].id;
+                            User.get(userId, function(err, people) {
+                                var password = SHA256.hex(regData.password + SHA256.hex(userId));
+                                console.log("password = " + password);
+                                people.password = password;
+                                people.save(function (err) {
+                                    if (!err) socket.emit('userAdded', {rez: 0}); else console.log("Password not added");
+                                });
+                            } );
                         } else {
                             console.log("User not created");
                         }
-                        var password = SHA256.hex(regData.password + SHA256.hex(userId));
-                        console.log("password = " + password);
-                        user[0].password = password;
-                        user[0].save(function (err) {
-                            if (!err) socket.emit('userAdded', {rez: 0}); else console.log("Password not added");
-                        });
                     });
                 });
             }
