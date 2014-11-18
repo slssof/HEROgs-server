@@ -8,7 +8,7 @@ var Hashes = require('jshashes'); // Генератор хэшей
 var SHA256 =  new Hashes.SHA256; //Объект для хэша
 var io = require('socket.io')(); //Создаем и запускаем сервер
 io.on('connection', onconnect);
-io.listen(3000);
+io.listen(3055);
 
 
 function onconnect(socket) { //Что делать при коннекте клиента
