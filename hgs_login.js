@@ -166,7 +166,7 @@ function onconnect(socket) { //Что делать при коннекте кл�
 
 var orm = require("orm"); //Подключили библиотеку БД
 
-mysql_db = orm.connect("mysql://slsirk:Ktghbrjy__17@herogs.ru/HEROgs_data", function (err, db) {
+mysql_db = orm.connect("mysql://slsirk:Ktghbrjy__17@localhost/herogs_data", function (err, db) {
     if (err) {
         console.log("Something is wrong with the connection", err);
         return;
