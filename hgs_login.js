@@ -151,7 +151,13 @@ function onconnect(socket) { //Что делать при коннекте кл�
 
                 Session.find({user: data}).order('-id').one(function (err, user) {
                     if (user.id > 0) {
-                        socket.emit('createSession', user);
+                        oSess.id = user.id;
+                        oSess.user = user.user;
+                        oSess.ip = user.ip;
+                        oSess.key = user.key;
+                        oSess.pub = user.pubKeyServ;
+                        oSess.priv = user.privKeyClient;
+                        socket.emit('createSession', oSess);
                         console.log("Session sended to Client");
                     } else {
                         console.log("Session not created");
@@ -166,7 +172,7 @@ function onconnect(socket) { //Что делать при коннекте кл�
 
 var orm = require("orm"); //Подключили библиотеку БД
 
-mysql_db = orm.connect("mysql://slsirk:Ktghbrjy__17@localhost/herogs_data", function (err, db) {
+mysql_db = orm.connect("mysql://root:Rhjvdtkm__68@localhost/HEROgs_data", function (err, db) {
     if (err) {
         console.log("Something is wrong with the connection", err);
         return;
